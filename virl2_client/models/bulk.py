@@ -176,6 +176,32 @@ class BulkManagement:
         for lab_id in lab_ids:
             del self._labs[lab_id]
 
+    def post_import(self, lab_data: list[dict]) -> list[dict[str, Any]]:
+        """
+        Add the specified labs.
+
+        Warning: All data must be valid (support for partial results is not available
+            yet).
+
+        :param lab_data: A list of dictionaries with lab properties.
+        :returns: A list of dictionaries with lab properties.
+        """
+        url = f"{self._url_for("labs")}/import"
+        return self._session.post(url, json=lab_data).json()
+
+    def import_labs(self, lab_data: list[dict]) -> list[Lab]:
+        """
+        Import the specified labs.
+
+        Warning: All data must be valid (support for partial results is not available
+            yet).
+
+        :param lab_data: A list of dictionaries with lab properties.
+        :returns: A list of labs objects.
+        """
+        response = self.post_import(lab_data)
+        return self._handle_lab_response(response)
+
     def _handle_lab_response(self, response: list[dict[str, Any]]) -> list[Lab]:
         """
         Turn response into a list of Lab objects.
