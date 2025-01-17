@@ -169,7 +169,13 @@ class CustomClient(httpx.Client):
             return self._original_request(*args, **kwargs)
         except httpx.HTTPStatusError as error:
             try:
-                error_detail = json.loads(error.response.text)["description"]
+                # SIMPLE-7349 - error schema needs to be updated
+                err = json.loads(error.response.text)
+                error_detail = err.get("detail")
+                if error_detail:
+                    error_detail = error_detail[0]["msg"]
+                else:
+                    error_detail = err.get("description")
             except (json.JSONDecodeError, IndexError, TypeError):
                 error_detail = error.response.text
             prefix = self._ERROR_PREFIX.get(error.response.status_code // 100, "")
